@@ -4,201 +4,53 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Firebase Key Manager</title>
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-}
-
-body{
-    background:#0f1117;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-.container{
-    width:420px;
-    background:#181c25;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:20px;
-    padding:25px;
-    box-shadow:0 0 40px rgba(0,0,0,.4);
-}
-
-h1{
-    color:#fff;
-    text-align:center;
-    margin-bottom:20px;
-}
-
-input,select,button{
-    width:100%;
-    border:none;
-    outline:none;
-    margin-top:12px;
-    border-radius:12px;
-    padding:14px;
-}
-
-input,select{
-    background:#232938;
-    color:white;
-}
-
-button{
-    background:#4f7cff;
-    color:white;
-    font-weight:700;
-    cursor:pointer;
-}
-
-button:hover{
-    opacity:.9;
-}
-
-.result{
-    margin-top:15px;
-    padding:12px;
-    background:#232938;
-    color:#00ff88;
-    border-radius:12px;
-    word-break:break-all;
-}
-
-.list{
-    margin-top:20px;
-}
-
-.key-item{
-    background:#232938;
-    padding:10px;
-    border-radius:12px;
-    margin-top:10px;
-    color:white;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-    <h1>KEY MANAGER</h1>
 
-    <input id="customKey" placeholder="Nhập key hoặc để trống để random">
+    <div id="loginBox">
+        <h1>Đăng nhập</h1>
 
-    <select id="type">
-        <option value="1day">1 Day</option>
-        <option value="7day">7 Days</option>
-        <option value="30day">30 Days</option>
-        <option value="60day">60 Days</option>
-        <option value="lifetime">Lifetime</option>
-    </select>
+        <input id="email" type="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Mật khẩu">
 
-    <button onclick="createKey()">Tạo Key</button>
-
-    <div class="result" id="result">
-        Chưa tạo key
+        <button id="loginBtn">
+            Đăng nhập
+        </button>
     </div>
 
-    <div class="list" id="list"></div>
+    <div id="panel" style="display:none;">
+
+        <h1>KEY MANAGER</h1>
+
+        <input id="customKey"
+        placeholder="Nhập key hoặc để trống để random">
+
+        <select id="type">
+            <option value="1day">1 Day</option>
+            <option value="7day">7 Days</option>
+            <option value="30day">30 Days</option>
+            <option value="60day">60 Days</option>
+            <option value="lifetime">Lifetime</option>
+        </select>
+
+        <button id="createBtn">
+            Tạo Key
+        </button>
+
+        <div class="result" id="result">
+            Chưa tạo key
+        </div>
+
+        <div class="list" id="list"></div>
+
+    </div>
+
 </div>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getDatabase,
-ref,
-set,
-get
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-/* THAY THÔNG TIN FIREBASE */
-const firebaseConfig = {
-  apiKey: "AIzaSyDshOvDwAkUjVJ_lDOG6CTAtMNc0lIxvyI",
-  authDomain: "hoangdeptrai-d1aaa.firebaseapp.com",
-  databaseURL: "https://hoangdeptrai-d1aaa-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "hoangdeptrai-d1aaa",
-  storageBucket: "hoangdeptrai-d1aaa.firebasestorage.app",
-  messagingSenderId: "764297369562",
-  appId: "1:764297369562:web:488a9b6ff3b30c65f7d2e3",
-  measurementId: "G-8SZGNWE1MJ"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-function randomKey(len=12){
-    const chars="ABCDEFGHJKLMNPQRSTUVWXYZ123456789";
-    let out="";
-    for(let i=0;i<len;i++){
-        out += chars[Math.floor(Math.random()*chars.length)];
-    }
-    return out;
-}
-
-window.createKey = async function(){
-
-    let key =
-        document.getElementById("customKey").value.trim().toUpperCase();
-
-    if(!key){
-        key = randomKey();
-    }
-
-    let type =
-        document.getElementById("type").value;
-
-    await set(ref(db,"keys/"+key),{
-        active:true,
-        is_locked:false,
-        type:type,
-        device_id:"",
-        activated_at:0,
-        wrong_attempts:0
-    });
-
-    document.getElementById("result").innerText =
-        "Đã tạo: " + key;
-
-    loadKeys();
-}
-
-async function loadKeys(){
-
-    const snapshot =
-        await get(ref(db,"keys"));
-
-    const list =
-        document.getElementById("list");
-
-    list.innerHTML="";
-
-    if(!snapshot.exists()) return;
-
-    const data = snapshot.val();
-
-    Object.keys(data).forEach(key=>{
-
-        const div =
-            document.createElement("div");
-
-        div.className="key-item";
-
-        div.innerHTML=
-            "<b>"+key+"</b><br>"+data[key].type;
-
-        list.appendChild(div);
-    });
-}
-
-loadKeys();
-
-</script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
